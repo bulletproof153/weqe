@@ -538,7 +538,7 @@ do
         function window:IsOverContent()
             local isOver = false
             --
-            if window.currentContent.frame and utility:MouseOverDrawing({window.currentContent.frame.Position.X,window.currentContent.frame.Position.Y,window.currentContent.frame.Position.X + window.currentContent.frame.Size.X,window.currentContent.frame.Position.Y + window.currentContent.frame.Size.Y}) then
+            if window.currentContent.frame and utility:OverDrawing({window.currentContent.frame.Position.X,window.currentContent.frame.Position.Y,window.currentContent.frame.Position.X + window.currentContent.frame.Size.X,window.currentContent.frame.Position.Y + window.currentContent.frame.Size.Y}) then
                 isOver = true
             end
             --
@@ -595,7 +595,7 @@ do
             library.ended = nil
             library.changed = nil
             --
-            uis.MouseIconEnabled = true
+            uis.IconEnabled = true
         end
         --
         function window:Watermark(info)
@@ -947,7 +947,7 @@ do
             --
             window:Watermark()
             window:KeybindsList()
-            window:Cursor()
+            --window:Cursor()
             --
             window:Fade()
         end
@@ -2433,6 +2433,7 @@ do
             if typeof(value) == "string" and table.find(options, value) then
                 dropdown.current = value
                 dropdown_value.Text = value
+		callback(value)
             end
         end
         --
