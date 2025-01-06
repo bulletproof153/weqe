@@ -1,0 +1,110 @@
+local Library = loadstring(game:HttpGet('https://raw.githubusercontent.com/bulletproof153/weqe/refs/heads/main/ksubi'))()
+
+local CombatV = {
+
+
+
+}
+
+local Camera = Workspace.CurrentCamera
+local Fov = 70
+local HitboxSize = 5
+local HitboxTransparency = 50
+local HitboxPart = "Head"
+local HitboxToggle = false
+local faketool = "xd"
+--local Highlight = Instance.new("Highlight",Workspace)
+local PartTables = {}
+--if Highlight then
+   -- Highligt.Adornee = nil
+--end
+-- // Window \\ --
+local Window = Library:New({Name = "Bulletproof UI", Accent = Color3.fromRGB(240, 240, 240),Size = Vector2.new(504,250)})
+
+-- // Pages \\ --
+local CombatPage = Window:Page({Name = "Combat"})
+
+-- // Sections \\ --
+local CMain = CombatPage:Section({Name = "Main",Side = "Left"})
+
+
+CMain:Toggle({Name = "Enabled",Default = false,Pointer = "CMT", Callback = function(v)
+    HitboxToggle = v
+end})
+:Keybind({Default = Enum.KeyCode.K, KeybindName = "CMB", Mode = "Hold", Pointer = "CMB"})
+
+local dropdown = CMain:Dropdown({Name = "PartName",Options = {'Head', 'HumanoidRootPart'}, Default = "Head", Pointer = "CMD", Callback = function(v)
+  HitboxPart = v
+end})
+
+local slider = CMain:Slider({Name = "HitboxSize", Minimum = 1, Maximum = 30, Default = 1.5, Decimals = 0.1, Pointer = "CMS1",Callback = function(v)
+ HitboxSize = v
+end})
+
+
+local slider = CMain:Slider({Name = "Transaprency", Minimum = 0, Maximum = 1, Default = 0.5, Decimals = 0.1, Pointer = "CMS2",Callback = function(v)
+ HitboxTransparency = v
+end})
+
+local slider = CMain:Slider({Name = "Fov", Minimum = 50, Maximum = 120, Default = 70, Decimals = 1, Pointer = "CMS3",Callback = function(v)
+Fov = v
+Camera.FieldOfView = Fov
+end})
+
+
+--[[local textbox =CMain:Textbox({Name = "FakeTool",Default = false,Pointer = "CMT",Placeholder = "Tec9", Callback = function(v)
+  faketool = v
+  print(faketool)
+  print(type(faketool))
+end})
+
+local button = sector.element('Button', 'Create Tool', nil, function()
+    local tool = Instance.new("Tool")
+      tool.Name = faketool
+      tool.Parent = game:GetService("Players").LocalPlayer:FindFirstChildWhichIsA("Backpack")
+
+      local character = game:GetService("Players").LocalPlayer.Character or game:GetService("Players").LocalPlayer.CharacterAdded:Wait()
+      local humanoid = character:WaitForChild("Humanoid")
+
+      humanoid.Died:Connect(function()
+          if tool.Parent == game:GetService("Players").LocalPlayer.Backpack then
+              tool:Destroy()
+          end
+      end)
+end)--]]
+
+Window:Initialize()
+game:GetService("RunService").RenderStepped:Connect(function() 
+   -- game.Workspace.CurrentCamera.FieldOfView = Fov
+
+    for i,v in pairs (game:GetService("Players"):GetPlayers()) do
+        if v ~= game.Players.LocalPlayer 
+        and v.Character
+        and v.Character:FindFirstChild("Humanoid") 
+        and v.Character.Humanoid.Health >= 0 then
+            if v.Character:FindFirstChild(HitboxPart) then
+                if HitboxToggle then
+                    local part = v.Character:FindFirstChild(HitboxPart)
+                    local num = HitboxSize
+                    if not PartTables[part] then
+                        PartTables[part] = part.Size
+                    end
+                    part.Size = Vector3.one * num
+                    part.Transparency = HitboxTransparency
+                    part.CanCollide = false
+                    part.Massless= true
+                    --Highlight.Adornee = part
+                else
+                    local part = v.Character:FindFirstChild(HitboxPart)
+                    if PartTables[part] then
+                       part.Size = PartTables[part]
+                    end
+                    part.Transparency = 0
+                    part.CanCollide = true
+                    --Highlight.Adornee = nil
+                end
+ 
+            end
+        end 
+    end
+end)
