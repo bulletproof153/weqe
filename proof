@@ -1,110 +1,183 @@
 local Library = loadstring(game:HttpGet('https://raw.githubusercontent.com/bulletproof153/weqe/refs/heads/main/ksubi'))()
 
-local CombatV = {
+local Camera = workspace.CurrentCamera
 
+
+local CombatVar = {
+
+	HitboxSize = 1.5,
+	HitboxTransparency = 50,
+	HitboxPart = "Head",
+	HitboxToggle = false,
 
 
 }
 
-local Camera = Workspace.CurrentCamera
 local Fov = 70
-local HitboxSize = 5
-local HitboxTransparency = 50
-local HitboxPart = "Head"
-local HitboxToggle = false
-local faketool = "xd"
+
 --local Highlight = Instance.new("Highlight",Workspace)
 local PartTables = {}
 --if Highlight then
-   -- Highligt.Adornee = nil
+-- Highligt.Adornee = nil
 --end
 -- // Window \\ --
 local Window = Library:New({Name = "Bulletproof UI", Accent = Color3.fromRGB(240, 240, 240),Size = Vector2.new(504,250)})
 
 -- // Pages \\ --
 local CombatPage = Window:Page({Name = "Combat"})
+local VisualPage = Window:Page({Name = "Visual"})
+local OtherPage = Window:Page({Name = "Other"})
 
 -- // Sections \\ --
-local CMain = CombatPage:Section({Name = "Main",Side = "Left"})
+local CHitbox = CombatPage:Section({Name = "Hitbox Expander",Side = "Left"})
+
+local VOther = VisualPage:Section({Name = "Other",Side = "Left"})
+
+local OFakeTool = OtherPage:Section({Name = "Fake Tool",Side = "Left"})
 
 
-CMain:Toggle({Name = "Enabled",Default = false,Pointer = "CMT", Callback = function(v)
-    HitboxToggle = v
+-- // COMBAT \\ --
+
+CHitbox:Toggle({Name = "Enabled",Default = false,Pointer = "CMT", Callback = function(v)
+	CombatVar.HitboxToggle = v
 end})
-:Keybind({Default = Enum.KeyCode.K, KeybindName = "CMB", Mode = "Hold", Pointer = "CMB"})
+	:Keybind({Default = Enum.KeyCode.K, KeybindName = "CMB", Mode = "Hold", Pointer = "CMB"})
 
-local dropdown = CMain:Dropdown({Name = "PartName",Options = {'Head', 'HumanoidRootPart'}, Default = "Head", Pointer = "CMD", Callback = function(v)
-  HitboxPart = v
-end})
-
-local slider = CMain:Slider({Name = "HitboxSize", Minimum = 1, Maximum = 30, Default = 1.5, Decimals = 0.1, Pointer = "CMS1",Callback = function(v)
- HitboxSize = v
-end})
-
-
-local slider = CMain:Slider({Name = "Transaprency", Minimum = 0, Maximum = 1, Default = 0.5, Decimals = 0.1, Pointer = "CMS2",Callback = function(v)
- HitboxTransparency = v
+local dropdown = CHitbox:Dropdown({Name = "PartName",Options = {'Head', 'HumanoidRootPart'}, Default = "Head", Pointer = "CMD", Callback = function(v)
+	CombatVar.HitboxPart = v
 end})
 
-local slider = CMain:Slider({Name = "Fov", Minimum = 50, Maximum = 120, Default = 70, Decimals = 1, Pointer = "CMS3",Callback = function(v)
-Fov = v
-Camera.FieldOfView = Fov
+local slider = CHitbox:Slider({Name = "HitboxSize", Minimum = 1, Maximum = 30, Default = 1.5, Decimals = 0.1, Pointer = "CMS1",Callback = function(v)
+	CombatVar.HitboxSize = v
+end})
+
+local slider = CHitbox:Slider({Name = "Transaprency", Minimum = 0, Maximum = 1, Default = 0.5, Decimals = 0.1, Pointer = "CMS2",Callback = function(v)
+	CombatVar.HitboxTransparency = v
 end})
 
 
---[[local textbox =CMain:Textbox({Name = "FakeTool",Default = false,Pointer = "CMT",Placeholder = "Tec9", Callback = function(v)
+-- // VISUAL \\ --
+
+local slider = VOther:Slider({Name = "Fov", Minimum = 50, Maximum = 120, Default = 70, Decimals = 1, Pointer = "CMS3",Callback = function(v)
+	Fov = v
+	Camera.FieldOfView = Fov
+end})
+
+-- // OTHER \\ --
+
+OFakeTool:Label({Name = "Due to ui library system,\nrename the tool in toolname frame\nby left clicking.", Middle = true})
+
+OFakeTool:Button({Name = "Create Fake Tool", Callback = function() 
+	local Tool = Instance.new("Tool",game.Players.LocalPlayer.Backpack)
+
+	Tool.RequiresHandle = false
+
+	Tool.Name = "Unnamed Tool"
+
+	local Gui = Instance.new("ScreenGui",Tool)
+
+	Gui.Enabled = false
+
+	local Frame1 = Instance.new("Frame",Gui)
+	local Frame2 = Instance.new("Frame",Frame1)
+	local Textlabel = Instance.new("TextLabel",Frame2)
+	local Textbox = Instance.new("TextBox",Frame2)
+
+	Frame1.Size = UDim2.fromOffset(200,100)
+	Frame1.Position = UDim2.new(0.5,-100,0.7,-50)
+	Frame1.BackgroundColor3 = Color3.new(1,1,1)
+	Frame1.BorderColor3 = Color3.new(0,0,0)
+	Frame1.BorderSizePixel = 1
+
+	Frame2.Size = UDim2.fromOffset(198,98)
+	Frame2.Position = UDim2.new(0.5,-99,0.5,-49)
+	Frame2.BackgroundColor3 = Color3.new(0.117647, 0.117647, 0.117647)
+	Frame2.BorderSizePixel = 0
+
+	Textlabel.Size = UDim2.fromScale(1,0.5)
+	Textlabel.Position = UDim2.fromScale(0,0)
+	Textlabel.BackgroundColor3 = Color3.new(1,1,1)
+	Textlabel.Font = 3
+	Textlabel.Text = "Tool name:"
+	Textlabel.TextStrokeColor3 = Color3.new(0,0,0)
+	Textlabel.TextColor3 = Color3.new(1,1,1)
+	Textlabel.TextSize = 20
+	Textlabel.BackgroundTransparency = 1
+
+	Textbox.Size = UDim2.fromScale(1,0.5)
+	Textbox.Position = UDim2.new(0.5,-99,1,-50)
+	Textbox.BackgroundColor3 = Color3.new(0.117647, 0.117647, 0.117647)
+	Textbox.BorderColor3 = Color3.new(1,1,1)
+	Textbox.BorderSizePixel = 1
+	Textbox.Font = 3
+	Textbox.TextStrokeColor3 = Color3.new(0,0,0)
+	Textbox.TextColor3 = Color3.new(1,1,1)
+	Textbox.TextSize = 30
+
+	Textbox.FocusLost:Connect(function()
+		Tool.Name = Textbox.Text
+	end)
+
+	Tool.Activated:Connect(function()
+
+		Gui.Enabled = not Gui.Enabled
+		if Gui.Enabled then
+			Gui.Parent = game.CoreGui
+		else
+			Gui.Parent = Tool
+		end
+	end)
+
+	Tool.Unequipped:Connect(function()
+		Gui.Enabled = false
+		Gui.Parent = Tool
+	end)
+end})
+
+
+
+--[[local textbox =CHitbox:Textbox({Name = "FakeTool",Default = false,Pointer = "CMT",Placeholder = "Tec9", Callback = function(v)
   faketool = v
   print(faketool)
   print(type(faketool))
 end})
 
 local button = sector.element('Button', 'Create Tool', nil, function()
-    local tool = Instance.new("Tool")
-      tool.Name = faketool
-      tool.Parent = game:GetService("Players").LocalPlayer:FindFirstChildWhichIsA("Backpack")
-
-      local character = game:GetService("Players").LocalPlayer.Character or game:GetService("Players").LocalPlayer.CharacterAdded:Wait()
-      local humanoid = character:WaitForChild("Humanoid")
-
-      humanoid.Died:Connect(function()
-          if tool.Parent == game:GetService("Players").LocalPlayer.Backpack then
-              tool:Destroy()
-          end
-      end)
+   
 end)--]]
 
 Window:Initialize()
 game:GetService("RunService").RenderStepped:Connect(function() 
-   -- game.Workspace.CurrentCamera.FieldOfView = Fov
+	-- game.Workspace.CurrentCamera.FieldOfView = Fov
 
-    for i,v in pairs (game:GetService("Players"):GetPlayers()) do
-        if v ~= game.Players.LocalPlayer 
-        and v.Character
-        and v.Character:FindFirstChild("Humanoid") 
-        and v.Character.Humanoid.Health >= 0 then
-            if v.Character:FindFirstChild(HitboxPart) then
-                if HitboxToggle then
-                    local part = v.Character:FindFirstChild(HitboxPart)
-                    local num = HitboxSize
-                    if not PartTables[part] then
-                        PartTables[part] = part.Size
-                    end
-                    part.Size = Vector3.one * num
-                    part.Transparency = HitboxTransparency
-                    part.CanCollide = false
-                    part.Massless= true
-                    --Highlight.Adornee = part
-                else
-                    local part = v.Character:FindFirstChild(HitboxPart)
-                    if PartTables[part] then
-                       part.Size = PartTables[part]
-                    end
-                    part.Transparency = 0
-                    part.CanCollide = true
-                    --Highlight.Adornee = nil
-                end
- 
-            end
-        end 
-    end
+	for i,v in pairs (game:GetService("Players"):GetPlayers()) do
+		if v ~= game.Players.LocalPlayer 
+			and v.Character
+			and v.Character:FindFirstChild("Humanoid") 
+			and v.Character.Humanoid.Health >= 0 then
+			if v.Character:FindFirstChild(CombatVar.HitboxPart) then
+				if CombatVar.HitboxToggle then
+					local part = v.Character:FindFirstChild(CombatVar.HitboxPart)
+					local num =	CombatVar.HitboxSize
+					if not PartTables[part] then
+						PartTables[part] = part.Size
+					end
+					part.Size = Vector3.one * num
+					part.Transparency = CombatVar.HitboxTransparency
+					part.CanCollide = false
+					part.Massless= true
+					--Highlight.Adornee = part
+				else
+					local part = v.Character:FindFirstChild(CombatVar.HitboxPart)
+					if PartTables[part] then
+						part.Size = PartTables[part]
+					end
+					part.Transparency = 0
+					part.CanCollide = true
+					--Highlight.Adornee = nil
+				end
+
+			end
+		end 
+	end
 end)
