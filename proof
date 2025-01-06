@@ -44,7 +44,7 @@ CHitbox:Toggle({Name = "Enabled",Default = false,Pointer = "CMT", Callback = fun
 end})
 	:Keybind({Default = Enum.KeyCode.K, KeybindName = "CMB", Mode = "Hold", Pointer = "CMB"})
 
-local dropdown = CHitbox:Dropdown({Name = "PartName",Options = {'Head', 'HumanoidRootPart'}, Default = "Head", Pointer = "CMD", Callback = function(v)
+local dropdown = CHitbox:Dropdown({Name = "PartName",Options = {'Head', 'Torso','UpperTorso'}, Default = "Head", Pointer = "CMD", Callback = function(v)
 	CombatVar.HitboxPart = v
 end})
 
@@ -135,17 +135,6 @@ OFakeTool:Button({Name = "Create Fake Tool", Callback = function()
 	end)
 end})
 
-
-
---[[local textbox =CHitbox:Textbox({Name = "FakeTool",Default = false,Pointer = "CMT",Placeholder = "Tec9", Callback = function(v)
-  faketool = v
-  print(faketool)
-  print(type(faketool))
-end})
-
-local button = sector.element('Button', 'Create Tool', nil, function()
-   
-end)--]]
 
 Window:Initialize()
 game:GetService("RunService").RenderStepped:Connect(function() 
