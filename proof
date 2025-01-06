@@ -31,7 +31,7 @@ local OtherPage = Window:Page({Name = "Other"})
 -- // Sections \\ --
 local CHitbox = CombatPage:Section({Name = "Hitbox Expander",Side = "Left"})
 
-local VOther = VisualPage:Section({Name = "Other",Side = "Left"})
+local VOther = OtherPage:Section({Name = "Other",Side = "Left"})
 
 local OFakeTool = OtherPage:Section({Name = "Fake Tool",Side = "Left"})
 
@@ -39,6 +39,7 @@ local OFakeTool = OtherPage:Section({Name = "Fake Tool",Side = "Left"})
 -- // COMBAT \\ --
 
 CHitbox:Toggle({Name = "Enabled",Default = false,Pointer = "CMT", Callback = function(v)
+	print(v)
 	CombatVar.HitboxToggle = v
 end})
 	:Keybind({Default = Enum.KeyCode.K, KeybindName = "CMB", Mode = "Hold", Pointer = "CMB"})
@@ -58,7 +59,7 @@ end})
 
 -- // VISUAL \\ --
 
-local slider = VOther:Slider({Name = "Fov", Minimum = 50, Maximum = 120, Default = 70, Decimals = 1, Pointer = "CMS3",Callback = function(v)
+local slider = CHitbox:Slider({Name = "Fov", Minimum = 50, Maximum = 120, Default = 70, Decimals = 1, Pointer = "CMS3",Callback = function(v)
 	Fov = v
 	Camera.FieldOfView = Fov
 end})
