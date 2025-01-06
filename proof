@@ -21,7 +21,7 @@ local PartTables = {}
 -- Highligt.Adornee = nil
 --end
 -- // Window \\ --
-local Window = Library:New({Name = "Bulletproof UI", Accent = Color3.fromRGB(240, 240, 240),Size = Vector2.new(504,250)})
+local Window = Library:New({Name = "Bulletproof UI  -- [PRESS Z TO HIDE] --", Accent = Color3.fromRGB(240, 240, 240),Size = Vector2.new(504,250)})
 
 -- // Pages \\ --
 local CombatPage = Window:Page({Name = "Combat"})
