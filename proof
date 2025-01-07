@@ -145,7 +145,7 @@ CAimbot:AddToggle({
 	end
 })
 
-OFakeTool:AddTextbox({
+CAimbot:AddTextbox({
 	Name = "Keybind",
 	Flag = "CAimbotToggle2",
 	Placeholder = "MouseButton..1-3 or Keycode",
