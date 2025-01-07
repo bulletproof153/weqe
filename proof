@@ -133,21 +133,8 @@ OFakeTool:AddTextbox({
 	Flag = "OFakeToolTextbox",
 	Placeholder = "...",
 	Value = "Unnamed Tool",
-	Callback = function() 
-		local Tool = Instance.new("Tool",game.Players.LocalPlayer.Backpack)
-
-		Tool.RequiresHandle = false
-
-		Tool.Name = OtherVar.FakeToolName
-
-		local character = Player.Character or Player.CharacterAdded:Wait()
-		local humanoid = character:WaitForChild("Humanoid")
-
-		humanoid.Died:Connect(function()
-			if Tool.Parent == Player.Backpack then
-				Tool:Destroy()
-			end
-		end)
+	Callback = function(v) 
+      OtherVar.FakeToolName = v
 	end
 })
 
