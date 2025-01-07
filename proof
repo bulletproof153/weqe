@@ -94,7 +94,7 @@ CHitbox:AddSlider({
 	Min = 1,
 	Max = 30,
 	Callback = function(v)
-		CombatVar.HitboxTransparency = v
+		CombatVar.HitboxSize = v
 	end
 })
 
