@@ -1,7 +1,7 @@
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/bulletproof153/weqe/refs/heads/main/ksubi2"))()
 
 local Camera = workspace.CurrentCamera
-local Player = game.Players.LocalPlayer
+local Player = game:GetService("Players").LocalPlayer
 
 
 local CombatVar = {
