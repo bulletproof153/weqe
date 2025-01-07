@@ -1,7 +1,8 @@
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/bulletproof153/weqe/refs/heads/main/ksubi2"))()
 
 local Camera = workspace.CurrentCamera
-local Player = game:GetService("Players").LocalPlayer
+local Players = game:GetService("Players")
+local Player = Players.LocalPlayer
 
 
 local CombatVar = {
@@ -9,7 +10,13 @@ local CombatVar = {
 	HitboxSize = 1.5,
 	HitboxTransparency = 50,
 	HitboxPart = "Head",
-	HitboxToggle = false,
+	HitboxEnabled = false,
+	
+	AimbotEnabled = false,
+	AimbotTarget = nil,
+	AimbotToggle = false,
+	AimbotActive = false,
+	AimbotCode = Enum.UserInputType.MouseButton2,
 
 
 }
@@ -36,7 +43,7 @@ local Window = Library:CreateWindow({
 		Background = 18359232994,
 		Credit = true
 	},
-	Theme = [[{"__Designer.Colors.topGradient":"232323","__Designer.Settings.ShowHideKey":"Enum.KeyCode.RightShift","__Designer.Colors.section":"FFFFFF","__Designer.Colors.hoveredOptionBottom":"2D2D2D","__Designer.Background.ImageAssetID":"rbxassetid://18359232994","__Designer.Colors.innerBorder":"282828","__Designer.Colors.unselectedOption":"282828","__Designer.Files.WorkspaceFile":"Pepsi's World","__Designer.Colors.unhoveredOptionTop":"323232","__Designer.Colors.outerBorder":"000000","__Designer.Background.ImageColor":"000000","__Designer.Colors.tabText":"E1E1E1","__Designer.Colors.elementBorder":"141414","__Designer.Colors.sectionBackground":"232222","__Designer.Colors.selectedOption":"373737","__Designer.Colors.background":"282828","__Designer.Colors.bottomGradient":"1D1D1D","__Designer.Background.ImageTransparency":88,"__Designer.Colors.main":"FFFFFF","__Designer.Colors.otherElementText":"B5B5B5","__Designer.Colors.hoveredOptionTop":"414141","__Designer.Colors.elementText":"DEDEDE","__Designer.Colors.unhoveredOptionBottom":"232323","__Designer.Background.UseBackgroundImage":false}]]
+	Theme = [[{"__Designer.Colors.topGradient":"232323","__Designer.Settings.ShowHideKey":"Enum.KeyCode.RightShift","__Designer.Colors.section":"FFFFFF","__Designer.Colors.hoveredOptionBottom":"2D2D2D","__Designer.Background.ImageAssetID":"rbxassetid://18359232994","__Designer.Colors.innerBorder":"282828","__Designer.Colors.unselectedOption":"282828","__Designer.Files.WorkspaceFile":"Pepsi's World","__Designer.Colors.unhoveredOptionTop":"323232","__Designer.Colors.outerBorder":"000000","__Designer.Background.ImageColor":"000000","__Designer.Colors.tabText":"E1E1E1","__Designer.Colors.elementBorder":"141414","__Designer.Colors.sectionBackground":"232222","__Designer.Colors.selectedOption":"373737","__Designer.Background.ImageTransparency":88,"__Designer.Colors.bottomGradient":"1D1D1D","__Designer.Colors.background":"282828","__Designer.Colors.main":"FFFFFF","__Designer.Colors.otherElementText":"B5B5B5","__Designer.Colors.hoveredOptionTop":"414141","__Designer.Colors.elementText":"DEDEDE","__Designer.Colors.unhoveredOptionBottom":"232323","__Designer.Background.UseBackgroundImage":true}]]
 })
 
 Library.MainScreenGui.main.Size = UDim2.fromOffset(500, 230)
@@ -51,6 +58,10 @@ local CHitbox = CombatPage:CreateSection(
 	{Name = "Hitbox Expander",Side = "Left"}
 )
 
+local CAimbot = CombatPage:CreateSection(
+	{Name = "Camera Aimbot",Side = "Right"}
+)
+
 local VOther = VisualPage:CreateSection(
 	{Name = "Other",Side = "Left"}
 )
@@ -62,13 +73,13 @@ local OFakeTool = OtherPage:CreateSection(
 
 -- // COMBAT \\ --
 
-CHitbox:Toggle({
+CHitbox:AddToggle({
 	Name = "Enabled",
-	Default = false,
+	Value = false,
 	Flag = "CHitboxToggle",
 	Keybind = Enum.KeyCode.K,
 	Callback = function(v)
-		CombatVar.HitboxToggle = v
+		CombatVar.HitboxEnabled = v
 	end
 	}
 )
@@ -94,7 +105,7 @@ CHitbox:AddSlider({
 	Min = 1,
 	Max = 30,
 	Callback = function(v)
-		CombatVar.HitboxSize = v
+		CombatVar.HitboxTransparency = v
 	end
 })
 
@@ -109,6 +120,42 @@ CHitbox:AddSlider({
 		CombatVar.HitboxTransparency = v
 	end
 })
+
+Library.keyHandler.notAllowedMouseInputs[Enum.UserInputType.MouseButton1] = false
+Library.keyHandler.notAllowedMouseInputs[Enum.UserInputType.MouseButton2] = false
+Library.keyHandler.notAllowedMouseInputs[Enum.UserInputType.MouseButton3] = false
+
+
+CAimbot:AddToggle({
+	Name = "Enabled",
+	Value = false,
+	Flag = "CAimbotToggle1",
+	Keybind = Enum.KeyCode.J,
+	Callback = function(v)
+		CombatVar.AimbotEnabled = v
+	end
+})
+
+CAimbot:AddToggle({
+	Name = "Toggle Mode",
+	Value = false,
+	Flag = "CAimbotToggle2",
+	Callback = function(v)
+		CombatVar.AimbotToggle = v
+	end
+})
+
+OFakeTool:AddTextbox({
+	Name = "Keybind",
+	Flag = "CAimbotToggle2",
+	Placeholder = "MouseButton..1-3 or Keycode",
+	Value = "MouseButton2",
+	Callback = function(v) 
+		OtherVar.AimbotCode = Enum.UserInputType:FromName(v) or Enum.KeyCode:FromName(v)
+	end
+})
+
+
 
 
 -- // VISUAL \\ --
@@ -134,7 +181,7 @@ OFakeTool:AddTextbox({
 	Placeholder = "...",
 	Value = "Unnamed Tool",
 	Callback = function(v) 
-      OtherVar.FakeToolName = v
+		OtherVar.FakeToolName = v
 	end
 })
 
@@ -165,33 +212,41 @@ OFakeTool:AddLabel({
 })
 
 game:GetService("RunService").RenderStepped:Connect(function() 
-	-- game.Workspace.CurrentCamera.FieldOfView = Fov
+	
+	if CombatVar.AimbotEnabled and CombatVar.AimbotTarget and CombatVar.AimbotActive then
+		Camera.CFrame = CFrame.lookAt(Camera.CFrame.Position,CombatVar.AimbotTarget.Position)
+	end
 
-	for i,v in pairs (game:GetService("Players"):GetPlayers()) do
-		if v ~= game.Players.LocalPlayer 
+	for i,v in pairs (Players:GetPlayers()) do
+		if v ~= Player
 			and v.Character
 			and v.Character:FindFirstChild("Humanoid") 
 			and v.Character.Humanoid.Health >= 0 then
 			if v.Character:FindFirstChild(CombatVar.HitboxPart) then
-				if CombatVar.HitboxToggle then
-					local part = v.Character:FindFirstChild(CombatVar.HitboxPart)
+				local part = v.Character:FindFirstChild(CombatVar.HitboxPart)
+				if CombatVar.HitboxEnabled then
 					local num =	CombatVar.HitboxSize
-					if not PartTables[part] then
-						PartTables[part] = part.Size
+					if not part:GetAttribute("OrigSize") then
+						part:SetAttribute("BPOrigSize",part.Size)
+						part:SetAttribute("BPOrigTransparency",part.Transparency)
 					end
+					--if not PartTables[part] then
+					--	PartTables[part] = part.Size
+					--end
 					part.Size = Vector3.one * num
 					part.Transparency = CombatVar.HitboxTransparency
 					part.CanCollide = false
 					part.Massless= true
-					--Highlight.Adornee = part
 				else
-					local part = v.Character:FindFirstChild(CombatVar.HitboxPart)
-					if PartTables[part] then
-						part.Size = PartTables[part]
+					--if PartTables[part] then
+					--	part.Size = PartTables[part]
+					--end
+					if part:GetAttribute("BPOrigSize") then
+						part.Size = part:GetAttribute("BPOrigSize")
+						part.Transparency = part:GetAttribute("BPOrigTransparency")
 					end
 					part.Transparency = 0
 					part.CanCollide = true
-					--Highlight.Adornee = nil
 				end
 
 			end
