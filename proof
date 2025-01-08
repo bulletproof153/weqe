@@ -2,6 +2,8 @@ local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/bulle
 
 local Camera = workspace.CurrentCamera
 local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
 local Player = Players.LocalPlayer
 
 
@@ -11,12 +13,18 @@ local CombatVar = {
 	HitboxTransparency = 50,
 	HitboxPart = "Head",
 	HitboxEnabled = false,
-	
+
 	AimbotEnabled = false,
 	AimbotTarget = nil,
 	AimbotToggle = false,
 	AimbotActive = false,
 	AimbotCode = Enum.UserInputType.MouseButton2,
+	AimbotPart = "Head",
+	AimbotFunction = nil,
+	AimbotDistance = 500,
+	AimbotInput1 = nil,
+	AimbotInput2 = nil,
+
 
 
 }
@@ -81,12 +89,12 @@ CHitbox:AddToggle({
 	Callback = function(v)
 		CombatVar.HitboxEnabled = v
 	end
-	}
+}
 )
 
 
 CHitbox:AddDropdown({
-	Name = "PartName",
+	Name = "Part Name",
 	List = {'Head', 'Torso','UpperTorso'},
 	Value = "Head", 
 	Nothing = "Head",
@@ -132,7 +140,7 @@ CAimbot:AddToggle({
 	Flag = "CAimbotToggle1",
 	Keybind = Enum.KeyCode.J,
 	Callback = function(v)
-		CombatVar.AimbotEnabled = v
+		Aimbot(v)
 	end
 })
 
@@ -151,10 +159,20 @@ CAimbot:AddTextbox({
 	Placeholder = "MouseButton..1-3 or Keycode",
 	Value = "MouseButton2",
 	Callback = function(v) 
-		OtherVar.AimbotCode = Enum.UserInputType:FromName(v) or Enum.KeyCode:FromName(v)
+		CombatVar.AimbotCode = Enum.UserInputType:FromName(v) or Enum.KeyCode:FromName(v)
 	end
 })
 
+CAimbot:AddDropdown({
+	Name = "Part Name",
+	List = {'Head', 'Torso','UpperTorso'},
+	Value = "Head", 
+	Nothing = "Head",
+	Flag = "CAimbotDropdown",
+	Callback = function(v)
+		CombatVar.AimbotPart = v
+	end
+})
 
 
 
@@ -195,7 +213,7 @@ OFakeTool:AddButton({
 		Tool.RequiresHandle = false
 
 		Tool.Name = OtherVar.FakeToolName
-		
+
 		local character = Player.Character or Player.CharacterAdded:Wait()
 		local humanoid = character:WaitForChild("Humanoid")
 
@@ -211,8 +229,88 @@ OFakeTool:AddLabel({
 	Name = "fake tool for ???",
 })
 
-game:GetService("RunService").RenderStepped:Connect(function() 
-	
+
+
+
+-- // FUNCTIONS \\ --
+
+function GetAimbotTarget()
+
+	local Distance = CombatVar.AimbotDistance or 500
+
+	local Target = nil
+
+	for _,Victim in pairs(Players:GetPlayers()) do
+		if Victim ~= Player and Victim.Character and Victim.Character:FindFirstChild(CombatVar.AimbotPart) and Victim.Character:FindFirstChild("Humanoid") and Victim.Character.Humanoid.Health > 0 then
+			local VictimPart = Victim.Character:FindFirstChild(CombatVar.AimbotPart)
+			local Point = Camera:WorldToViewportPoint(VictimPart.Position)
+			local Vector = Vector2.new(Point.X,Point.Y)
+			local DistanceFromVictim = (UserInputService:GetMouseLocation()-Vector).Magnitude
+			if DistanceFromVictim <= Distance then
+				Target = VictimPart
+				Distance = DistanceFromVictim
+			end
+		end
+	end
+
+	CombatVar.AimbotTarget = Target
+
+end
+
+function Aimbot(value)
+
+	if value then
+
+		CombatVar.AimbotEnabled = true
+
+		CombatVar.AimbotInput1 = UserInputService.InputBegan:Connect(function(Input)
+			print(CombatVar.AimbotCode)
+			if Input.UserInputType == CombatVar.AimbotCode or Input.KeyCode == CombatVar.AimbotCode then
+
+				CombatVar.AimbotActive = if CombatVar.AimbotToggle then not CombatVar.AimbotActive else true
+
+
+				if CombatVar.AimbotActive then
+					GetAimbotTarget()
+				else
+					CombatVar.AimbotTarget = nil
+				end
+
+			end
+
+
+		end)
+
+		CombatVar.AimbotInput2 = UserInputService.InputEnded:Connect(function(Input)
+
+			if CombatVar.AimbotToggle then return end
+
+			if Input.UserInputType == CombatVar.AimbotCode or Input.KeyCode == CombatVar.AimbotCode then
+
+				CombatVar.AimbotActive = false
+
+				CombatVar.AimbotTarget = nil
+
+
+			end
+
+		end)
+
+
+	else
+
+		if CombatVar.AimbotInput1 then
+			CombatVar.AimbotInput1:Disconnect()
+		end
+		if CombatVar.AimbotInput2 then
+			CombatVar.AimbotInput2:Disconnect()
+		end
+	end
+
+end
+
+RunService.RenderStepped:Connect(function() 
+
 	if CombatVar.AimbotEnabled and CombatVar.AimbotTarget and CombatVar.AimbotActive then
 		Camera.CFrame = CFrame.lookAt(Camera.CFrame.Position,CombatVar.AimbotTarget.Position)
 	end
@@ -225,7 +323,7 @@ game:GetService("RunService").RenderStepped:Connect(function()
 			if v.Character:FindFirstChild(CombatVar.HitboxPart) then
 				local part = v.Character:FindFirstChild(CombatVar.HitboxPart)
 				if CombatVar.HitboxEnabled then
-					if not part:GetAttribute("OrigSize") then
+					if not part:GetAttribute("BPOrigSize") then
 						part:SetAttribute("BPOrigSize",part.Size)
 						part:SetAttribute("BPOrigTransparency",part.Transparency)
 					end
