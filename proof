@@ -4,6 +4,7 @@ local Camera = workspace.CurrentCamera
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
+local ContextActionService = game:GetService("ContextActionService")
 local Player = Players.LocalPlayer
 
 
@@ -24,7 +25,7 @@ local CombatVar = {
 	AimbotDistance = 500,
 	AimbotInput1 = nil,
 	AimbotInput2 = nil,
-
+	AimbotMouseMode = false
 
 
 }
@@ -54,7 +55,7 @@ local Window = Library:CreateWindow({
 	Theme = [[{"__Designer.Colors.topGradient":"232323","__Designer.Settings.ShowHideKey":"Enum.KeyCode.RightShift","__Designer.Colors.section":"FFFFFF","__Designer.Colors.hoveredOptionBottom":"2D2D2D","__Designer.Background.ImageAssetID":"rbxassetid://18359232994","__Designer.Colors.innerBorder":"282828","__Designer.Colors.unselectedOption":"282828","__Designer.Files.WorkspaceFile":"Pepsi's World","__Designer.Colors.unhoveredOptionTop":"323232","__Designer.Colors.outerBorder":"000000","__Designer.Background.ImageColor":"000000","__Designer.Colors.tabText":"E1E1E1","__Designer.Colors.elementBorder":"141414","__Designer.Colors.sectionBackground":"232222","__Designer.Colors.selectedOption":"373737","__Designer.Background.ImageTransparency":88,"__Designer.Colors.bottomGradient":"1D1D1D","__Designer.Colors.background":"282828","__Designer.Colors.main":"FFFFFF","__Designer.Colors.otherElementText":"B5B5B5","__Designer.Colors.hoveredOptionTop":"414141","__Designer.Colors.elementText":"DEDEDE","__Designer.Colors.unhoveredOptionBottom":"232323","__Designer.Background.UseBackgroundImage":true}]]
 })
 
-Library.MainScreenGui.main.Size = UDim2.fromOffset(500, 230)
+Library.MainScreenGui.main.Size = UDim2.fromOffset(500, 265)
 
 -- // Pages \\ --
 local CombatPage = Window:CreateTab({Name = "Combat"})
@@ -168,12 +169,33 @@ CAimbot:AddDropdown({
 	List = {'Head', 'Torso','UpperTorso'},
 	Value = "Head", 
 	Nothing = "Head",
-	Flag = "CAimbotDropdown",
+	Flag = "CAimbotDropdown1",
 	Callback = function(v)
 		CombatVar.AimbotPart = v
 	end
 })
 
+CAimbot:AddDropdown({
+	Name = "Aimbot Mode",
+	List = {'Camera','Mouse'},
+	Value = "Camera", 
+	Nothing = "Camera",
+	Flag = "CAimbotDropdown2",
+	Callback = function(v)
+		CombatVar.AimbotMouseMode = v == "Mouse"
+	end
+})
+
+CAimbot:AddLabel({
+	Name = "Warning!",
+})
+CAimbot:AddLabel({
+	Name = "Mouse mode doesnt work",
+})
+CAimbot:AddLabel({
+	Name = "properly with MouseButton2",
+})
+-- lol
 
 
 -- // VISUAL \\ --
@@ -243,10 +265,10 @@ function GetAimbotTarget()
 	for _,Victim in pairs(Players:GetPlayers()) do
 		if Victim ~= Player and Victim.Character and Victim.Character:FindFirstChild(CombatVar.AimbotPart) and Victim.Character:FindFirstChild("Humanoid") and Victim.Character.Humanoid.Health > 0 then
 			local VictimPart = Victim.Character:FindFirstChild(CombatVar.AimbotPart)
-			local Point = Camera:WorldToViewportPoint(VictimPart.Position)
+			local Point,OnScreen = Camera:WorldToViewportPoint(VictimPart.Position)
 			local Vector = Vector2.new(Point.X,Point.Y)
 			local DistanceFromVictim = (UserInputService:GetMouseLocation()-Vector).Magnitude
-			if DistanceFromVictim <= Distance then
+			if DistanceFromVictim <= Distance and OnScreen then
 				Target = VictimPart
 				Distance = DistanceFromVictim
 			end
@@ -264,7 +286,6 @@ function Aimbot(value)
 		CombatVar.AimbotEnabled = true
 
 		CombatVar.AimbotInput1 = UserInputService.InputBegan:Connect(function(Input)
-			print(CombatVar.AimbotCode)
 			if Input.UserInputType == CombatVar.AimbotCode or Input.KeyCode == CombatVar.AimbotCode then
 
 				CombatVar.AimbotActive = if CombatVar.AimbotToggle then not CombatVar.AimbotActive else true
@@ -312,7 +333,21 @@ end
 RunService.RenderStepped:Connect(function() 
 
 	if CombatVar.AimbotEnabled and CombatVar.AimbotTarget and CombatVar.AimbotActive then
-		Camera.CFrame = CFrame.lookAt(Camera.CFrame.Position,CombatVar.AimbotTarget.Position)
+		
+		if CombatVar.AimbotMouseMode then
+			local Point,OnScreen = Camera:WorldToViewportPoint(CombatVar.AimbotTarget.Position)
+			local Vector = Vector2.new(Point.X,Point.Y)
+			
+			if not OnScreen then
+				Camera.CFrame = CFrame.lookAt(Camera.CFrame.Position,CombatVar.AimbotTarget.Position)
+			end
+			local Location = UserInputService:GetMouseLocation()
+			mousemoverel(Vector.X-Location.X,Vector.Y-Location.Y)
+			
+		else
+			Camera.CFrame = CFrame.lookAt(Camera.CFrame.Position,CombatVar.AimbotTarget.Position)
+		end
+		
 	end
 
 	for i,v in pairs (Players:GetPlayers()) do
