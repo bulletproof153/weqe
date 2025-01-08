@@ -105,7 +105,7 @@ CHitbox:AddSlider({
 	Min = 1,
 	Max = 30,
 	Callback = function(v)
-		CombatVar.HitboxTransparency = v
+		CombatVar.HitboxSize = v
 	end
 })
 
@@ -225,7 +225,6 @@ game:GetService("RunService").RenderStepped:Connect(function()
 			if v.Character:FindFirstChild(CombatVar.HitboxPart) then
 				local part = v.Character:FindFirstChild(CombatVar.HitboxPart)
 				if CombatVar.HitboxEnabled then
-					local num =	CombatVar.HitboxSize
 					if not part:GetAttribute("OrigSize") then
 						part:SetAttribute("BPOrigSize",part.Size)
 						part:SetAttribute("BPOrigTransparency",part.Transparency)
@@ -233,7 +232,7 @@ game:GetService("RunService").RenderStepped:Connect(function()
 					--if not PartTables[part] then
 					--	PartTables[part] = part.Size
 					--end
-					part.Size = Vector3.one * num
+					part.Size = Vector3.one * CombatVar.HitboxSize
 					part.Transparency = CombatVar.HitboxTransparency
 					part.CanCollide = false
 					part.Massless= true
