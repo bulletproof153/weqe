@@ -25,7 +25,14 @@ local CombatVar = {
 	AimbotDistance = 500,
 	AimbotInput1 = nil,
 	AimbotInput2 = nil,
-	AimbotMouseMode = false
+	AimbotMouseMode = false,
+	AimbotCircle = nil,
+	AimbotSensitivity = 1,
+	
+	CircleColor = Color3.new(1,1,1),
+	CircleNumSides = 5,
+	CircleThickness = 2,
+	CircleTransparency = 0.5,
 
 
 }
@@ -69,7 +76,11 @@ local CHitbox = CombatPage:CreateSection(
 )
 
 local CAimbot = CombatPage:CreateSection(
-	{Name = "Camera Aimbot",Side = "Right"}
+	{Name = "Aimbot",Side = "Right"}
+)
+
+local CAimbot2 = CombatPage:CreateSection(
+	{Name = "Aimbot Range Circle",Side = "Right"}
 )
 
 local VOther = VisualPage:CreateSection(
@@ -176,6 +187,38 @@ CAimbot:AddDropdown({
 	end
 })
 
+
+CAimbot:AddSlider({
+	Name = "Max Range", 
+	Min = 5, 
+	Max = 500,
+	Value = 250,
+	Flag = "CAimbotSlider1",
+	Callback = function(v)
+		CombatVar.AimbotDistance = v	
+		if CombatVar.AimbotCircle then
+			CombatVar.AimbotCircle.Radius = v
+		end
+	end,
+	Format = function(Value)
+		return tostring(Value) .. " pixels"
+	end
+})
+
+CAimbot:AddSlider({
+	Name = "Sensitivity", 
+	Min = 0.01, 
+	Max = 1,
+	Value = 1,
+	Decimals = 2,
+	Textbox = true,
+	Flag = "CAimbotSlider2",
+	Callback = function(v)
+		CombatVar.AimbotSensitivity = v
+	end,
+
+})
+
 CAimbot:AddDropdown({
 	Name = "Aimbot Mode",
 	List = {'Camera','Mouse'},
@@ -198,6 +241,86 @@ CAimbot:AddLabel({
 })
 -- lol
 
+CAimbot2:AddToggle({
+	Name = "Max Range Circle",
+	Value = false,
+	Flag = "CAimbotToggle3",
+	Callback = function(v)
+		if v then
+			
+			local Circle = Drawing.new("Circle")
+			Circle.Transparency = CombatVar.CircleTransparency
+			Circle.Thickness = CombatVar.CircleThickness
+			Circle.NumSides = CombatVar.CircleNumSides
+			Circle.Radius = CombatVar.AimbotDistance
+			Circle.Color = CombatVar.CircleColor
+			CombatVar.AimbotCircle = Circle
+		else
+			
+			if CombatVar.AimbotCircle then
+				
+				CombatVar.AimbotCircle.Visible = false
+				CombatVar.AimbotCircle:Remove()
+				
+			end
+			
+		end
+	end
+})
+
+CAimbot2:AddSlider({
+	Name = "Transparency", 
+	Min = 0, 
+	Max = 1,
+	Value = 0.5,
+	Decimals = 1,
+	Flag = "CAimbot2Slider1",
+	Callback = function(v)
+		if CombatVar.AimbotCircle then
+			CombatVar.CircleTransparency = v
+			CombatVar.AimbotCircle.Transparency = v
+		end
+	end,
+})
+
+CAimbot2:AddSlider({
+	Name = "Thickness", 
+	Min = 1, 
+	Max = 20,
+	Value = 2,
+	Flag = "CAimbot2Slider2",
+	Callback = function(v)
+		if CombatVar.AimbotCircle then
+			CombatVar.CircleThickness = v
+			CombatVar.AimbotCircle.Thickness = v
+		end
+	end,
+})
+
+--[[CAimbot2:AddSlider({
+	Name = "NumSides", 
+	Min = 1, 
+	Max = 25,
+	Value = 5,
+	Flag = "CAimbot2Slider3",
+	Callback = function(v)
+		if CombatVar.AimbotCircle then
+			CombatVar.AimbotCircle.NumSides = v
+		end
+	end,
+})--]]
+
+CAimbot2:AddColorpicker({
+	Name = "Color", 
+	Value = Color3.new(1,1,1),
+	Flag = "CAimbot2Slider3",
+	Callback = function(v)
+		if CombatVar.AimbotCircle then
+			CombatVar.CircleColor = v
+			CombatVar.AimbotCircle.Color = v
+		end
+	end,
+})
 
 -- // VISUAL \\ --
 
@@ -331,24 +454,34 @@ function Aimbot(value)
 
 end
 
-RunService.RenderStepped:Connect(function() 
+RunService.RenderStepped:Connect(function(dt) 
 
 	if CombatVar.AimbotEnabled and CombatVar.AimbotTarget and CombatVar.AimbotActive then
-		
+		local camerachange = false
 		if CombatVar.AimbotMouseMode then
 			local Point,OnScreen = Camera:WorldToViewportPoint(CombatVar.AimbotTarget.Position)
 			local Vector = Vector2.new(Point.X,Point.Y)
 			
-			if not OnScreen then
-				Camera.CFrame = CFrame.lookAt(Camera.CFrame.Position,CombatVar.AimbotTarget.Position)
-			end
+			camerachange = not OnScreen
+
 			local Location = UserInputService:GetMouseLocation()
-			mousemoverel(Vector.X-Location.X,Vector.Y-Location.Y)
+			local DeltaX,DeltaY = Vector.X-Location.X,Vector.Y-Location.Y
+			local Sens = math.min(CombatVar.AimbotSensitivity*1.15,1)
+			mousemoverel(DeltaX * Sens,DeltaY * Sens)
 			
 		else
-			Camera.CFrame = CFrame.lookAt(Camera.CFrame.Position,CombatVar.AimbotTarget.Position)
+			camerachange = true
 		end
 		
+		if camerachange then
+			local goal =CFrame.lookAt(Camera.CFrame.Position,CombatVar.AimbotTarget.Position)
+
+			Camera.CFrame = Camera.CFrame:Lerp(goal,CombatVar.AimbotSensitivity or 1)
+		end
+	end
+	
+	if CombatVar.AimbotCircle then
+		CombatVar.AimbotCircle.Position = UserInputService:GetMouseLocation()
 	end
 
 	for i,v in pairs (Players:GetPlayers()) do
